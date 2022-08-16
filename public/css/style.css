@@ -1,0 +1,13 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-size: 50px;
+    min-height: 100vh;
+    color: rgb(255, 255, 255);
+    background-color: rgb(195, 49, 49);
+    display: grid;
+    place-content: center;
+}

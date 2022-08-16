@@ -1,0 +1,21 @@
+{
+  "name": "05tut",
+  "version": "1.0.0",
+  "description": "Express Tutorial",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server",
+    "dev": "nodemon server"
+  },
+  "author": "Eric",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "date-fns": "^2.29.1",
+    "express": "^4.18.1",
+    "uuidv4": "^6.2.13"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.19"
+  }
+}

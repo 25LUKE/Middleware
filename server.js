@@ -1,29 +1,19 @@
 const express = require('express');
-const { logger } = require('./middleware/logEvents')
+const { logger, logEvents } = require('./middleware/logEvents')
+const  errorHandler  = require('./middleware/errorHandler')
 const app = express();
 const cors = require('cors');
+const corsOptions = require('./configFile/corsOptions');
 const path = require('path');
-const PORT = process.env.PORT || 3060;
+const PORT = process.env.PORT || 3500;
 
-
+  
 //Custom middleware logger
 app.use(logger);
 
-//Cross origin Resource Sharing
-const whitelist = ['http://www.oursite.com', 'http://127.0.0.1:5500', 'http://localhost:3060'];
-    const corsOptions = {
-        origin: (origin, callback) => {
-            if (whitelist.indexOf(origin)!== -1) {
-                callback(null,true)
-            } else {
-                callback(new Error('Not allowed by CORS'));
-            }
-        },
-        optionsSuccessStatus: 200
-    }
-app.use(cors(corsOptions))
+app.use(cors(corsOptions));
 
-// built-in middleware to handle urlencoded data
+// built-in middleware to handle urlencoded data form data
 app.use(express.urlencoded({ extended: false }));
 
 //built-in midddleware for json
@@ -31,21 +21,16 @@ app.use(express.json());
 
 //server static files
 app.use(express.static(path.join(__dirname, '/public')));
+//app.use('/Subdir',express.static(path.join(__dirname, '/public')));
 
-//Route
-app.get('^/$|/index(.html)?', (req, res) =>{
-    /* res.sendFile('./Views/index.html', { root: __dirname}); */
-    res.sendFile(path.join(__dirname, 'Views', 'index.html'));
-});
-app.get('/new-page(.html)?', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Views', 'new-page.html'));
-});
-app.get('/old-page(.html)?', (req, res) => {
-    res.redirect(301,'/new-page.html'); //302 by default
-});
+//Routes
+app.use('/', require('./Routes/root'))
+//app.use('/Subdir',require('./Routes/subdir'));
+app.use('/emlpoyees', require('./Routes/api/employees'));
+
 
 // Route handlers
-app.get('/hello(.html)?', (req, res, next) => {
+/* app.get('/hello(.html)?', (req, res, next) => {
     console.log('attempted to load hello.html');
     next()
 }, (req,res) => {
@@ -64,11 +49,19 @@ const three = (req, res, next) =>{
     console.log('three')
     res.send('Finished')
 }
+app.get('/chain(.html)?', [one, two, three]) */
 
-app.get('/chain(.html)?', [one, two, three])
-
-app.get('/*', (req, res) => {
-    res.status(404).sendFile(path.join(__dirname, 'Views', '404.html'));
+app.all('*', (req, res) => {
+    res.status(404);
+    if (req.accepts('html')) {
+        res.sendFile(path.join(__dirname, 'Views', '404.html'));
+    } else if (req.accepts('json')) {
+        res.json({ error: '404 Not Found'});
+    } else {
+        res.type('txt').send("404 Not Found");
+    }
 });
+
+app.use(errorHandler);
 
 app.listen(PORT, () => console.log(`server is running on this port ${PORT}`))

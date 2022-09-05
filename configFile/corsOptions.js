@@ -1,10 +1,5 @@
-
 //Cross origin Resource Sharing (CORS)...Third-party middleware
-const whitelist = [
-    'https://www.ourlist.com',
-    'http://127.0.0.1:8080',
-    'http://localhost:3500'
-];
+const allowedOrigins = require('./allowedOrigins')
 
 const corsOptions = {
     origin: (origin, callback) => {

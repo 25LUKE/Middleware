@@ -1,16 +1,24 @@
 const express = require('express');
-const { logger, logEvents } = require('./middleware/logEvents')
+const { logger } = require('./middleware/logEvents')
 const  errorHandler  = require('./middleware/errorHandler')
 const app = express();
 const cors = require('cors');
 const corsOptions = require('./configFile/corsOptions');
 const path = require('path');
+const verifyJWT = require("./middleware/verifyJWT");
+const cookieParser = require('cookie-parser');
+const credentials = require('./middleware/credentials')
 const PORT = process.env.PORT || 3500;
 
   
 //Custom middleware logger
 app.use(logger);
 
+//Handle options credentials check - before CORS!
+// and fetch cookies credentials requirement
+app.use(credentials);
+
+//Cross Origin Resource Sharing
 app.use(cors(corsOptions));
 
 // built-in middleware to handle urlencoded data form data
@@ -19,14 +27,21 @@ app.use(express.urlencoded({ extended: false }));
 //built-in midddleware for json
 app.use(express.json());
 
+//middleware for cookies
+app.use(cookieParser())
+
 //server static files
-app.use(express.static(path.join(__dirname, '/public')));
-//app.use('/Subdir',express.static(path.join(__dirname, '/public')));
+app.use('/', express.static(path.join(__dirname, '/public')));
 
 //Routes
-app.use('/', require('./Routes/root'))
-//app.use('/Subdir',require('./Routes/subdir'));
-app.use('/emlpoyees', require('./Routes/api/employees'));
+app.use('/', require('./Routes/root'));
+app.use('/register', require('./Routes/register'));
+app.use('/auth', require('./Routes/auth'));
+app.use('/refresh', require('./Routes/refresh'));
+app.use('/logout', require('./Routes/logout'));
+
+app.use(verifyJWT);
+app.use('/employees', require('./Routes/api/employees'));
 
 
 // Route handlers
